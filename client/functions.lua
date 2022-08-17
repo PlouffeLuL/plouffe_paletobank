@@ -1,5 +1,7 @@
 local Utils = exports.plouffe_lib:Get("Utils")
 local Callback = exports.plouffe_lib:Get("Callback")
+local Interface = exports.plouffe_lib:Get("Interface")
+local Lang = exports.plouffe_lib:Get("Lang")
 local Animation = {
     ComputerHack = {dict = "missheist_jewel@hacking"},
     Trolley = {dict = "anim@heists@ornate_bank@grab_cash", cash_appear = joaat("CASH_APPEAR"), cash_destroyed = joaat("RELEASE_CASH_DESTROY")}
@@ -39,6 +41,41 @@ local NetworkGetNetworkIdFromEntity = NetworkGetNetworkIdFromEntity
 function Plb:Start()
     self:ExportAllZones()
     self:RegisterEvents()
+
+    if GetConvar("plouffe_paletobank:qtarget", "") == "true" then
+        if GetResourceState("qtarget") ~= "missing" then
+            local breakCount = 0
+            while GetResourceState("qtarget") ~= "started" and breakCount < 30 do
+                breakCount += 1
+                Wait(1000)
+            end
+
+            if GetResourceState("qtarget") ~= "started" then
+                return
+            end
+
+            local data = {}
+            for k,v in pairs(self.Trolley) do
+                table.insert(data, joaat(v.trolley))
+            end
+
+            exports.qtarget:AddTargetModel(data,{
+                distance = 1.5,
+                options = {
+                    {
+                        icon = 'fas fa-info',
+                        label = Lang.bank_tryLoot,
+                        action = Plb.TryLoot
+                    },
+                    {
+                        icon = 'fas fa-viruses',
+                        label = Lang.bank_tryDestroy,
+                        action = Plb.DestroyLoot
+                    }
+                }
+            })
+        end
+    end
 end
 
 function Plb:ExportAllZones()
@@ -48,12 +85,7 @@ function Plb:ExportAllZones()
 end
 
 function Plb:RegisterEvents()
-    RegisterNetEvent("plouffe_lib:inVehicle", function(inVehicle, vehicle)
-        self.Utils.inVehicle = inVehicle
-        self.Utils.vehicle = vehicle
-    end)
-
-    RegisterNetEvent("plouffe_paletobank:start_robbery", function()
+    Utils:RegisterNetEvent("plouffe_paletobank:start_robbery", function()
         self:StartRobbery()
     end)
 
@@ -100,21 +132,25 @@ function Plb:GetClosestTrolley(coords)
 end
 
 function Plb.TryLockpick()
-    if Utils:GetItemCount("advancedlockpick") < 1 then
-        return
+    for k,v in pairs(Plb.lockpick_items) do
+        if Utils:GetItemCount(k) < v then
+            return
+        end
     end
 
     local door = Plb:GetClosestDoor()
-    
+
     if not door then
         return
     end
 
-    local amount = Plb.Utils.lockpickAmount
-
     Utils:PlayAnim(nil, "mp_arresting", "a_uncuff" , 49, 3.0, 2.0, 5000, true, true, true)
 
-    local succes = exports.roundbar:Start(amount, 5000)
+    local succes = Interface.Lockpick.New({
+        amount = 10,
+        range = 35,
+        maxKeys = 6
+    })
 
     Utils:StopAnim()
 
@@ -123,24 +159,33 @@ end
 exports("TryLockpick", Plb.TryLockpick)
 
 function Plb:TryHack(parrams)
-    if Utils:GetItemCount("laptop") < 1 then
-        return Utils:Notify("Vous avez besoin d'un laptop")
-    elseif Utils:GetItemCount("usb_red") < 1 then
-        return Utils:Notify("Ils vous manque un connecteur")
+    for k,v in pairs(Plb.hack_items) do
+        if Utils:GetItemCount(k) < v then
+            return
+        end
     end
 
     local canRob, reason = Callback:Sync("plouffe_paletobank:canRob", Plb.Utils.MyAuthKey)
 
     if not canRob then
-        return
+        return Interface.Notifications.Show({
+            style = "error",
+            header = "Paleto bank",
+            message = reason
+        })
     end
 
     local Hack = Animation.ComputerHack:Start()
 
-    local success = exports.varhack:start(7, 20)
+    local success = Interface.MovingSquare.New({
+        time = 20,
+        amount = 8,
+        errors = 0,
+        delay = 6
+    })
 
     Hack:Exit()
-    
+
     TriggerServerEvent("plouffe_paletobank:hack_succes", success, parrams.zone, Plb.Utils.MyAuthKey)
 end
 
@@ -154,39 +199,52 @@ function Plb.TryLoot()
     if not Trolley then
         return
     end
-    
+
     while not Trolley.looted do
         Wait(0)
     end
 
     TriggerServerEvent("plouffe_paletobank:requestLoots", NetworkGetNetworkIdFromEntity(Trolley.trolleyEntity), Plb.Utils.MyAuthKey)
-    
+
     local init = GetGameTimer()
 
     while DoesEntityExist(Trolley.trolleyEntity) and GetGameTimer() - init < 5000 do
         Wait(0)
     end
-    
+
     Trolley:Exit()
 end
+exports("TryLoot", Plb.TryLoot)
 
 function Plb.DestroyLoot()
     if GlobalState.PaletoBankRobbery ~= "Started" then
         return
     end
 
+    local ped = PlayerPedId()
+    local pedCoords = GetEntityCoords(ped)
+    local trolleyEntity, data, key = Plb:GetClosestTrolley(pedCoords)
+
+    if not trolleyEntity then
+        return
+    end
+
+    TriggerServerEvent("plouffe_paletobank:TryDestroyLoots", NetworkGetNetworkIdFromEntity(trolleyEntity), Plb.Utils.MyAuthKey)
 end
+exports("TryDestroyLoot", Plb.DestroyLoot)
 
 function Plb:StartRobbery()
-    Utils:Notify(("Il vous reste %s minutes a attendre avant que la porte ouvre"):format(math.ceil((self.Utils.doorDelay / 60) / 1000)))
-    exports.plouffe_dispatch:SendAlert("10-90 B") 
+    Interface.Notifications.Show({message = Lang.bank_timeUntilDoorOpens:format(math.ceil((self.Utils.doorDelay / 60) / 1000))})
+    if GetResourceState("plouffe_dispatch") == "started" then
+        exports.plouffe_dispatch:SendAlert("10-90 B")
+    end
 end
 
 function Animation.Trolley:Prepare()
     Utils:AssureAnim(self.dict, true)
-    
+
     local trolleyData
-    
+
     self.looted = false
 
     self.ped = PlayerPedId()
@@ -194,7 +252,7 @@ function Animation.Trolley:Prepare()
     self.boneIndex = GetPedBoneIndex(self.ped, 60309)
 
     self.trolleyEntity, trolleyData = Plb:GetClosestTrolley(self.pedCoords)
-    
+
     Utils:AssureEntityControl(self.trolleyEntity)
 
     if not self.trolleyEntity then
@@ -212,7 +270,7 @@ function Animation.Trolley:Prepare()
     FreezeEntityPosition(self.emptyTrolley, true)
 
     FreezeEntityPosition(self.lootEntity, true)
-    
+
     SetEntityNoCollisionEntity(self.lootEntity, self.ped)
     SetEntityVisible(self.lootEntity, false, false)
     AttachEntityToEntity(self.lootEntity, self.ped, self.boneIndex, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 0, true)
@@ -249,7 +307,7 @@ function Animation.Trolley:Loop()
         NetworkAddEntityToSynchronisedScene(self.trolleyEntity, scene, self.dict, "cart_cash_dissapear", 4.0, -8.0, 1)
         NetworkStartSynchronisedScene(scene)
     end)
-    
+
     self:LootsEvent()
 
     return self
@@ -274,7 +332,7 @@ function Animation.Trolley:LootsEvent()
             end
         end
     end
-    
+
     self.looted = true
     DeleteEntity(self.lootEntity)
 end
@@ -294,9 +352,9 @@ function Animation.Trolley:Exit()
     NetworkAddPedToSynchronisedScene(self.ped, scene, self.dict, "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(self.bagEntity, scene, self.dict, "bag_exit", 4.0, -8.0, 1)
     NetworkStartSynchronisedScene(scene)
-    
+
     Wait(1800)
-    
+
     self:Finished()
 end
 
@@ -337,7 +395,7 @@ function Animation.ComputerHack:Start()
     NetworkStartSynchronisedScene(scene)
 
     Wait(500)
-    
+
     CreateThread(function()
         self:Loop()
     end)
