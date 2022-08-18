@@ -134,7 +134,11 @@ end
 function Plb.TryLockpick()
     for k,v in pairs(Plb.lockpick_items) do
         if Utils:GetItemCount(k) < v then
-            return
+            return Interface.Notifications.Show({
+                style = "error",
+                header = "Paleto bank",
+                message = Lang.missing_something
+            })
         end
     end
 
@@ -161,7 +165,11 @@ exports("TryLockpick", Plb.TryLockpick)
 function Plb:TryHack(parrams)
     for k,v in pairs(Plb.hack_items) do
         if Utils:GetItemCount(k) < v then
-            return
+            return Interface.Notifications.Show({
+                style = "error",
+                header = "Paleto bank",
+                message = Lang.missing_something
+            })
         end
     end
 

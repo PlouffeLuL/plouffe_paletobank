@@ -3,6 +3,7 @@ local Utils = exports.plouffe_lib:Get("Utils")
 local Callback = exports.plouffe_lib:Get("Callback")
 local Lang = exports.plouffe_lib:Get("Lang")
 local Inventory = exports.plouffe_lib:Get("Inventory")
+local Groups = exports.plouffe_lib:Get("Groups")
 local doorsList
 
 if GetConvar("plouffe_paletobank:gabzmap", "") == "true" then
@@ -131,7 +132,39 @@ if GetConvar("plouffe_paletobank:gabzmap", "") == "true" then
     }
 else
     doorsList = {
+        paleto_bank_office_door = {
+            lock = true,
+            lockOnly = true,
+            interactCoords = {
+                {coords = vector3(-109.37424468994, 6468.2387695313, 31.626712799072), maxDst = 0.8}
+            },
+            doors = {
+                {model = -1184592117, coords = vec3(-108.914688, 6469.104980, 31.910284)}
+            },
+            access = {
+                groups = {
+                    police = {rankSpecific = 7}
+                }
+            }
+        },
 
+        paleto_bank_vault = {
+            lock = true,
+            lockOnly = true,
+            interactCoords = {
+                {coords = vector3(-105.01850891113, 6472.7114257813, 31.626708984375), maxDst = 1.5}
+            },
+            doors = {
+                {model = -1185205679, coords = vec3(-104.604897, 6473.443848, 31.795324)},
+                {model = 1622278560, coords = vec3(-104.6049, 6473.646, 31.9548)},
+                {model = 1309269072, coords = vec3(-106.4713, 6476.158, 31.9548)}
+            },
+            access = {
+                groups = {
+                    police = {rankSpecific = 7}
+                }
+            }
+        }
     }
 end
 

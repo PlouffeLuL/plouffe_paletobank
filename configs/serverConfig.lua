@@ -107,5 +107,88 @@ if GetConvar("plouffe_paletobank:gabzmap", "") == "true" then
     }
   }
 else
+  Plb.Zones = {
+    paleto_bank = {
+      name = "paleto_bank",
+      isZone = true,
+      zMax = 37.2,
+      zMin = 29.0,
+      coords = {
+        vector3(-123.50521087646, 6472.4423828125, 31.808837890625),
+        vector3(-115.15476226807, 6480.71484375, 31.808837890625),
+        vector3(-113.40524291992, 6479.3232421875, 31.808837890625),
+        vector3(-107.75926208496, 6485.0224609375, 31.808837890625),
+        vector3(-88.75464630127, 6466.2260742188, 31.808837890625),
+        vector3(-102.62382507324, 6451.5463867188, 31.808837890625)
+      },
+      zoneMap = {
+        inEvent = "plouffe_paletobank:inZone",
+        outEvent = "plouffe_paletobank:exitZone"
+      }
+    },
 
+    paleto_bank_hack_office = {
+      name = "paleto_bank_hack_office",
+      isZone = true,
+      label = "Connection",
+      distance = 0.5,
+      params = {fnc = "TryHack", zone = "office"},
+      coords = vector3(-105.60813903809, 6470.5932617188, 31.626707077026),
+      keyMap = {
+        key = "E", 
+        event = "plouffe_paletobank:onZone"
+      }
+    },
+
+    paleto_bank_hack_security = {
+      name = "paleto_bank_hack_security",
+      isZone = true,
+      label = "Connection",
+      distance = 0.5,
+      params = {fnc = "TryHack", zone = "security"},
+      coords = vector3(-111.60349273682, 6471.560546875, 31.626712799072),
+      keyMap = {
+        key = "E", 
+        event = "plouffe_paletobank:onZone"
+      }
+    }
+  }
+
+  Plb.Doords = {
+    "paleto_bank_office_door"
+  }
+
+  Plb.HackingZone = {
+    office = {
+      coords = vector3(-105.60813903809, 6470.5932617188, 31.626707077026), 
+      maxDst = 0.5,
+    },
+
+    security = {
+      coords = vector3(-111.60349273682, 6471.560546875, 31.626712799072),
+      maxDst = 0.5,
+    }
+  }
+
+  Plb.TrolleySpawns = {
+    {
+      coords = vector3(-107.52085723877, 6475.54921875, 30.158917236328),
+      rotation = vector3(0.0, -0.0, 44.4)
+    },
+
+    {
+      coords = vector3(-102.4849029541, 6477.2856445312, 30.158917236328),
+      rotation = vector3(0.0, -0.0, -44.8)
+    },
+
+    {
+      coords = vector3(-103.44848327637, 6474.982421875, 30.158917236328),
+      rotation = vector3(0.0, -0.0, -135.0)
+    },
+
+    {
+      coords = vector3(-106.13491210938, 6478.1750976562, 30.158917236328),
+      rotation = vector3(0.0, -0.0, 45.1)
+    }
+  }
 end
