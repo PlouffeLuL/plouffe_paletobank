@@ -386,9 +386,7 @@ function Plb.PlayerHackFinished(succes, zone, authkey)
     end
 
     for k,v in pairs(Plb.hack_items) do
-        if Utils:GetItemCount(k) < v then
-            Utils:ReduceDurability(playerId, k, 60 * 60 * 24)
-        end
+        Inventory.ReduceDurability(playerId, k, 60 * 60 * 24)
     end
 
     if not succes then
@@ -437,10 +435,9 @@ function Plb:StartRobbery(playerId)
 
     TriggerClientEvent("plouffe_paletobank:start_robbery",playerId)
 
-    Utils:Notify(playerId, Lang.paletobank_finishedHacking:format(self.doorDelay))
-
     CreateThread(function()
         Wait(self.doorDelay)
+        Utils:Notify(playerId, Lang.paletobank_finishedHacking:format(0))
         self:CreateTrolley()
         exports.plouffe_doorlock:UpdateDoorState("paleto_bank_vault", false)
     end)
@@ -566,9 +563,14 @@ function Plb:CanRob()
         return false, Lang.bank_robbedLately
     end
 
+    local count = 0
+
     for k,v in pairs(Plb.PoliceGroups) do
         local cops = Groups:GetGroupPlayers(v)
+        count += cops.len
+    end
 
+    if count < Plb.MinCops then
         if cops.len < Plb.MinCops then
             return false, Lang.bank_notEnoughCop
         end

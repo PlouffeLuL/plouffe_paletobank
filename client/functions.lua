@@ -242,7 +242,7 @@ end
 exports("TryDestroyLoot", Plb.DestroyLoot)
 
 function Plb:StartRobbery()
-    Interface.Notifications.Show({message = Lang.bank_timeUntilDoorOpens:format(math.ceil((self.Utils.doorDelay / 60) / 1000))})
+    Interface.Notifications.Show({message = Lang.bank_timeUntilDoorOpens:format(math.ceil((self.doorDelay / 60) / 1000))})
     if GetResourceState("plouffe_dispatch") == "started" then
         exports.plouffe_dispatch:SendAlert("10-90 B")
     end
