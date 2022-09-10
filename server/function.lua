@@ -571,9 +571,7 @@ function Plb:CanRob()
     end
 
     if count < Plb.MinCops then
-        if cops.len < Plb.MinCops then
-            return false, Lang.bank_notEnoughCop
-        end
+        return false, Lang.bank_notEnoughCop
     end
 
     return true
