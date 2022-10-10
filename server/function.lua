@@ -178,7 +178,7 @@ local currentMoney = GetResourceKvpInt(("currentMoney")) or 0
 function Plb.Init()
     Plb.ValidateConfig()
 
-    Utils:CreateDepencie("plouffe_doorlock", Plb.ExportsAllDoors)
+    Utils.CreateDepencie("plouffe_doorlock", Plb.ExportsAllDoors)
 
     Server.ready = true
 
@@ -325,7 +325,7 @@ end
 
 function Plb.LoadPlayer()
     local playerId = source
-    local registred, key = Auth:Register(playerId)
+    local registred, key = Auth.Register(playerId)
 
     while not Server.ready do
         Wait(100)
@@ -342,7 +342,7 @@ end
 
 function Plb.RemoveItem(item, amount, authkey)
     local playerId = source
-    if Auth:Validate(playerId,authkey) and Auth:Events(playerId,"plouffe_paletobank:removeItem") then
+    if Auth.Validate(playerId,authkey) and Auth.Events(playerId,"plouffe_paletobank:removeItem") then
         Inventory.RemoveItem(playerId, item, amount)
     end
 end
@@ -350,7 +350,7 @@ end
 function Plb.PlayerUnlockedDoor(doorIndex, succes, authkey)
     local playerId = source
 
-    if not Auth:Validate(playerId,authkey) or not Auth:Events(playerId,"plouffe_paletobank:lockpickedDoor") then
+    if not Auth.Validate(playerId,authkey) or not Auth.Events(playerId,"plouffe_paletobank:lockpickedDoor") then
         return
     end
 
@@ -368,7 +368,7 @@ end
 function Plb.PlayerHackFinished(succes, zone, authkey)
     local playerId = source
 
-    if not Auth:Validate(playerId,authkey) or not Auth:Events(playerId,"plouffe_paletobank:hack_succes") then
+    if not Auth.Validate(playerId,authkey) or not Auth.Events(playerId,"plouffe_paletobank:hack_succes") then
         return
     end
 
@@ -437,7 +437,7 @@ function Plb:StartRobbery(playerId)
 
     CreateThread(function()
         Wait(self.doorDelay)
-        Utils:Notify(playerId, Lang.paletobank_finishedHacking:format(0))
+        Utils.Notify(playerId, Lang.paletobank_finishedHacking:format(0))
         self:CreateTrolley()
         exports.plouffe_doorlock:UpdateDoorState("paleto_bank_vault", false)
     end)
@@ -499,7 +499,7 @@ end
 function Plb.RequestLoots(netId, authkey)
     local playerId = source
 
-    if not Auth:Validate(playerId,authkey) or not Auth:Events(playerId,"plouffe_paletobank:requestLoots") then
+    if not Auth.Validate(playerId,authkey) or not Auth.Events(playerId,"plouffe_paletobank:requestLoots") then
         return
     end
 
@@ -541,7 +541,7 @@ end
 function Plb.DestroyLoots(netId, authkey)
     local playerId = source
 
-    if not Auth:Validate(playerId,authkey) or not Auth:Events(playerId,"plouffe_paletobank:destroyLoots") then
+    if not Auth.Validate(playerId,authkey) or not Auth.Events(playerId,"plouffe_paletobank:destroyLoots") then
         return
     end
 
@@ -566,7 +566,7 @@ function Plb:CanRob()
     local count = 0
 
     for k,v in pairs(Plb.PoliceGroups) do
-        local cops = Groups:GetGroupPlayers(v)
+        local cops = Groups.GetGroupPlayers(v)
         count += cops.len
     end
 
@@ -583,9 +583,9 @@ AddEventHandler('onResourceStop', function(resourceName)
     end
 end)
 
-Callback:RegisterServerCallback("plouffe_paletobank:canRob", function(source, cb, authkey)
+Callback.Register("plouffe_paletobank:canRob", function(source, authkey)
     local _source = source
-    if Auth:Validate(_source,authkey) and Auth:Events(_source,"plouffe_paletobank:canRob") then
-        cb(Plb:CanRob())
+    if Auth.Validate(_source,authkey) and Auth.Events(_source,"plouffe_paletobank:canRob") then
+        return Plb:CanRob()
     end
 end)

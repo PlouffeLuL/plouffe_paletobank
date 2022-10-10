@@ -85,7 +85,7 @@ function Plb:ExportAllZones()
 end
 
 function Plb:RegisterEvents()
-    Utils:RegisterNetEvent("plouffe_paletobank:start_robbery", function()
+    Utils.RegisterNetEvent("plouffe_paletobank:start_robbery", function()
         self:StartRobbery()
     end)
 
@@ -133,7 +133,7 @@ end
 
 function Plb.TryLockpick()
     for k,v in pairs(Plb.lockpick_items) do
-        if Utils:GetItemCount(k) < v then
+        if Utils.GetItemCount(k) < v then
             return Interface.Notifications.Show({
                 style = "error",
                 header = "Paleto bank",
@@ -148,7 +148,7 @@ function Plb.TryLockpick()
         return
     end
 
-    Utils:PlayAnim(nil, "mp_arresting", "a_uncuff" , 49, 3.0, 2.0, 5000, true, true, true)
+    Utils.PlayAnim(nil, "mp_arresting", "a_uncuff" , 49, 3.0, 2.0, 5000, true, true, true)
 
     local succes = Interface.Lockpick.New({
         amount = 10,
@@ -156,7 +156,7 @@ function Plb.TryLockpick()
         maxKeys = 6
     })
 
-    Utils:StopAnim()
+    Utils.StopAnim()
 
     TriggerServerEvent("plouffe_paletobank:lockpickedDoor", door, succes, Plb.Utils.MyAuthKey)
 end
@@ -164,7 +164,7 @@ exports("TryLockpick", Plb.TryLockpick)
 
 function Plb:TryHack(parrams)
     for k,v in pairs(Plb.hack_items) do
-        if Utils:GetItemCount(k) < v then
+        if Utils.GetItemCount(k) < v then
             return Interface.Notifications.Show({
                 style = "error",
                 header = "Paleto bank",
@@ -173,7 +173,7 @@ function Plb:TryHack(parrams)
         end
     end
 
-    local canRob, reason = Callback:Sync("plouffe_paletobank:canRob", Plb.Utils.MyAuthKey)
+    local canRob, reason = Callback.Sync("plouffe_paletobank:canRob", Plb.Utils.MyAuthKey)
 
     if not canRob then
         return Interface.Notifications.Show({
@@ -249,7 +249,7 @@ function Plb:StartRobbery()
 end
 
 function Animation.Trolley:Prepare()
-    Utils:AssureAnim(self.dict, true)
+    Utils.AssureAnim(self.dict, true)
 
     local trolleyData
 
@@ -261,7 +261,7 @@ function Animation.Trolley:Prepare()
 
     self.trolleyEntity, trolleyData = Plb:GetClosestTrolley(self.pedCoords)
 
-    Utils:AssureEntityControl(self.trolleyEntity)
+    Utils.AssureEntityControl(self.trolleyEntity)
 
     if not self.trolleyEntity then
         return false
@@ -270,9 +270,9 @@ function Animation.Trolley:Prepare()
     self.trolleyRotation = GetEntityRotation(self.trolleyEntity)
     self.trolleyCoords = GetEntityCoords(self.trolleyEntity)
 
-    self.bagEntity =  Utils:CreateProp("hei_p_m_bag_var22_arm_s",  {x = self.pedCoords.x, y = self.pedCoords.y, z = self.pedCoords.z - 5.0}, nil, true, true)
-    self.emptyTrolley = Utils:CreateProp(trolleyData.empty,{x = self.pedCoords.x, y = self.pedCoords.y, z = self.pedCoords.z - 8.0}, nil, true, true)
-    self.lootEntity = Utils:CreateProp(trolleyData.prop,{x = self.pedCoords.x, y = self.pedCoords.y, z = self.pedCoords.z - 10.0}, nil, true, true)
+    self.bagEntity =  Utils.CreateProp("hei_p_m_bag_var22_arm_s",  {x = self.pedCoords.x, y = self.pedCoords.y, z = self.pedCoords.z - 5.0}, nil, true, true)
+    self.emptyTrolley = Utils.CreateProp(trolleyData.empty,{x = self.pedCoords.x, y = self.pedCoords.y, z = self.pedCoords.z - 8.0}, nil, true, true)
+    self.lootEntity = Utils.CreateProp(trolleyData.prop,{x = self.pedCoords.x, y = self.pedCoords.y, z = self.pedCoords.z - 10.0}, nil, true, true)
 
     SetEntityRotation(self.emptyTrolley, self.trolleyRotation.x, self.trolleyRotation.y, self.trolleyRotation.z)
     FreezeEntityPosition(self.emptyTrolley, true)
@@ -380,7 +380,7 @@ end
 function Animation.ComputerHack:Prepare()
     self.state = "Prepare"
 
-    Utils:AssureAnim(self.dict, true)
+    Utils.AssureAnim(self.dict, true)
 
     self.ped = PlayerPedId()
     self.pedCoords = GetEntityCoords(self.ped)
